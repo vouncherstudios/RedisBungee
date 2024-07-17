@@ -1,0 +1,69 @@
+From 40ddc3eddc58b87e3cc3bd1763f7da786bfe1539 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lu=C3=ADs=20Mendes?= <soconfirmo@hotmail.com>
+Date: Wed, 10 Jul 2024 03:57:16 -0300
+Subject: [PATCH] Add support for CloudNet
+
+
+diff --git a/api/build.gradle.kts b/api/build.gradle.kts
+index 282cdfd..02a555b 100644
+--- a/api/build.gradle.kts
++++ b/api/build.gradle.kts
+@@ -19,6 +19,7 @@ dependencies {
+     api(libs.adventure.legacy)
+     api(libs.adventure.plain)
+     api(libs.adventure.miniMessage)
++    compileOnly("eu.cloudnetservice.cloudnet:driver:4.0.0-RC10")
+ }
+ 
+ description = "RedisBungee interfaces"
+diff --git a/api/src/main/java/com/imaginarycode/minecraft/redisbungee/api/config/loaders/ConfigLoader.java b/api/src/main/java/com/imaginarycode/minecraft/redisbungee/api/config/loaders/ConfigLoader.java
+index a73b6ef..541161e 100644
+--- a/api/src/main/java/com/imaginarycode/minecraft/redisbungee/api/config/loaders/ConfigLoader.java
++++ b/api/src/main/java/com/imaginarycode/minecraft/redisbungee/api/config/loaders/ConfigLoader.java
+@@ -18,6 +18,8 @@ import com.imaginarycode.minecraft.redisbungee.api.config.RedisBungeeConfigurati
+ import com.imaginarycode.minecraft.redisbungee.api.summoners.JedisClusterSummoner;
+ import com.imaginarycode.minecraft.redisbungee.api.summoners.JedisPooledSummoner;
+ import com.imaginarycode.minecraft.redisbungee.api.summoners.Summoner;
++import eu.cloudnetservice.driver.ComponentInfo;
++import eu.cloudnetservice.driver.inject.InjectionLayer;
+ import ninja.leaping.configurate.ConfigurationNode;
+ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
+ import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
+@@ -78,6 +80,14 @@ public interface ConfigLoader extends GenericConfigLoader {
+             networkId = networkIdFromEnv;
+         }
+ 
++        // Check if we are running on CloudNet, if so, we can get the service name and node unique id.
++        boolean isRunningOnCloudNet = isRunningOnCloudNet();
++        if (isRunningOnCloudNet) {
++            ComponentInfo info = getCloudNetInfo();
++            proxyId = info.componentName();
++            networkId = info.nodeUniqueId();
++        }
++
+         // Configuration sanity checks.
+         if (proxyId == null || proxyId.isEmpty()) {
+             String genId = UUID.randomUUID().toString();
+@@ -188,6 +198,19 @@ public interface ConfigLoader extends GenericConfigLoader {
+         onConfigLoad(configuration, summoner, redisBungeeMode);
+     }
+ 
++    private static ComponentInfo getCloudNetInfo() {
++        return InjectionLayer.ext().instance(ComponentInfo.class);
++    }
++
++    private static boolean isRunningOnCloudNet() {
++        try {
++            Class.forName("eu.cloudnetservice.driver.DriverEnvironment");
++            return true;
++        } catch (Exception ignored) {
++            return false;
++        }
++    }
++
+     void onConfigLoad(RedisBungeeConfiguration configuration, Summoner<?> summoner, RedisBungeeMode mode);
+ 
+ 
+-- 
+2.45.2
+
