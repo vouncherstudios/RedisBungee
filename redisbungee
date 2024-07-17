@@ -8,7 +8,7 @@ case "$1" in
         scripts/build.sh || exit 1
     ;;
     "m" | "up" | "merge")
-        scripts/mergeUpstream.sh || exit 1
+        scripts/mergeUpstream.sh --tags || exit 1
     ;;
     "b" | "build")
         scripts/build.sh --jar || exit 1
