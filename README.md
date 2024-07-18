@@ -10,4 +10,4 @@ A custom fork of RedisBungee with CloudNet support.
 
 ## License
 
-Strawberry is released under the MIT License. See the [LICENSE](LICENSE) file for more details.
+RedisBungee is released under the MIT License. See the [LICENSE](LICENSE) file for more details.
